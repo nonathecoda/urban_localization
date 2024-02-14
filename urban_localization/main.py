@@ -7,6 +7,7 @@ import numpy as np
 from utils.load_scene import load_scene
 from utils.pose_estimate import PoseEstimate
 from search_strategy.heuristic_sampling import get_best_pose_estimate, sample_estimates
+from utils.pointcloud_tools import create_pointclouds, mask_depthmaps
 from hilla.geometry.camera import Orientation, PinholeCamera, Pose
 ########## measure execution time of block 1 ##########
 print(time.time() - start_time)
@@ -21,9 +22,13 @@ class Localizer():
 
         # sample pose estimates and get best one
         sampled_pose_estimates = sample_estimates(scene, camera, guessed_pose, n=10)
-        best_estimate = get_best_pose_estimate(true_pose, sampled_pose_estimates)
-
+        estimate_pose = get_best_pose_estimate(true_pose, sampled_pose_estimates)
         
+        # create pointclouds for true and best estimate
+        masked_depthmap_true_pose, masked_depthmap_estimate_pose = mask_depthmaps(true_pose, estimate_pose) # TODO: what is this doing?
+        create_pointclouds(true_pose, masked_depthmap_true_pose, camera)
+        create_pointclouds(estimate_pose, masked_depthmap_estimate_pose, camera)
+
        
          
 
