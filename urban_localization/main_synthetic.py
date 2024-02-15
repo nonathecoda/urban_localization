@@ -50,30 +50,30 @@ if __name__ == "__main__":
         # create hilla camera object
         camera = PinholeCamera.from_fov(width=640, height=480, hfov_deg=90)
         # create PoseEstimate object for true pose
-        true_position = [scene.centroid[0], scene.centroid[1] + 50, 60]
-        true_orientation = [-90, -40, 0]
-        true_pose_hilla = Pose.from_camera_in_world(
-            Orientation.from_yaw_pitch_roll(np.radians(true_orientation)),
-            position=true_position,
+        query_position = [scene.centroid[0], scene.centroid[1] + 50, 60]
+        query_orientation = [-90, -40, 0]
+        query_pose_hilla = Pose.from_camera_in_world(
+            Orientation.from_yaw_pitch_roll(np.radians(query_orientation)),
+            position=query_position,
         )
-        true_pose = PoseEstimate.create_from_scene_view(scene, camera, true_pose_hilla, name = 'true_pose')
+        query_pose = PoseEstimate.create_from_scene_view(scene, camera, query_pose_hilla, name = 'query_pose')
         # create PoseEstimate object for guessed pose
-        guessed_position = np.add(true_position, [50, -45, 30])
-        guessed_orientation = np.add(true_orientation, [10, 0, 0])
+        guessed_position = np.add(query_position, [50, -45, 30])
+        guessed_orientation = np.add(query_orientation, [10, 0, 0])
         guessed_pose_hilla = Pose.from_camera_in_world(
             Orientation.from_yaw_pitch_roll(np.radians(guessed_orientation)),
             position=guessed_position,
         )
         guessed_pose = PoseEstimate.create_from_scene_view(scene, camera, guessed_pose_hilla, name = 'guessed_pose')
-        return scene, camera, true_pose, guessed_pose
+        return scene, camera, query_pose, guessed_pose
 
     
     loc = Localizer()
-    scene, camera, true_pose, guessed_pose = initialisation()
+    scene, camera, query_pose, guessed_pose = initialisation()
     
     ########## measure execution time of block 2 ##########
     print(time.time() - new_time)
     new_time = time.time()
     #######################################################
 
-    loc.run(scene, camera, true_pose, guessed_pose)
+    loc.run(scene, camera, query_pose, guessed_pose)

@@ -1,0 +1,15 @@
+dataset:
+    camera:
+        width: 3280 # in pixels
+        height: 2464 # in pixels
+        left:
+            path_intrinsic: "camera_calibration/intrinsic_left.npy"
+            path_distortion: "camera_calibration/distortion_left.npy"
+        right:
+            path_intrinsic: "camera_calibration/intrinsic_right.npy"
+            path_distortion: "camera_calibration/distortion_right.npy"
+        stereo:
+            path_stereomap: "camera_calibration/stereo_map.xml"
+            baseline: 30  # in cm
+
+
