@@ -10,8 +10,6 @@ from numpy.linalg import inv
 from pyrender import Scene
 from typing_extensions import Self
 import cv2
-
-from utils.camera_conversions import convert_camera_model_hilla2open3d
 from utils.render import render_rgb_and_depth
 
 

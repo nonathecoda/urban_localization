@@ -5,9 +5,7 @@ import pyrender
 from matplotlib import pyplot as plt
 import numpy as np
 
-from hilla.geometry.camera import Orientation, PinholeCamera, Pose
-
-from utils.camera_conversions import ensure_pyrender_camera, ensure_pyrender_camera_pose, convert_camera_pose_hilla2pyrender
+from utils.camera_conversions import ensure_pyrender_camera, ensure_pyrender_camera_pose
 
 def live_view(scene):
     pyrender.Viewer(scene, use_raymond_lighting=True)

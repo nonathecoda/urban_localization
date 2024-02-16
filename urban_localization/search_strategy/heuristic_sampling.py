@@ -14,7 +14,7 @@ def get_best_pose_estimate(true_pose, sampled_pose_estimates):
         estimates_copy.append(sample)
         
     best_estimate = max(estimates_copy, key=attrgetter('score'))
-    draw_loftr(true_pose, best_estimate)
+    #draw_loftr(true_pose, best_estimate)
     return best_estimate
 
 def sample_estimates(scene, camera, guessed_pose, n):
@@ -46,7 +46,7 @@ def sample_estimates(scene, camera, guessed_pose, n):
             Orientation.from_yaw_pitch_roll(np.radians(np.add(guessed_pose_orientation, transform[1]))),
             position=np.add(guessed_pose_position, transform[0])
         )
-        new_estimate = PoseEstimate.create_from_scene_view(scene, camera, new_estimate_pose, name = str(count))
+        new_estimate = PoseEstimate.create_from_scene(scene, camera, new_estimate_pose, name = str(count))
                     
         estimates.append(new_estimate)
 

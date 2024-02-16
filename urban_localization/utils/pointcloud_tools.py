@@ -2,14 +2,18 @@ import math
 import open3d as o3d
 import numpy as np
 from icecream import ic
-
+import copy
 from utils.camera_conversions import convert_camera_model_hilla2open3d
 
 def create_pointclouds(pose_estimate, mask, camera):   
     open3d_camera = convert_camera_model_hilla2open3d(camera)
     pose_estimate = pose_estimate._replace(pc = o3d.geometry.PointCloud.create_from_depth_image(o3d.geometry.Image(mask), open3d_camera))
+    return pose_estimate
 
 def mask_depthmaps(real_position, best_estimate):
+    '''
+    Mask the depthmaps of the real position and the best estimate to remove points which are not in the correspondences 
+    '''
     
     skip_index = []
 
@@ -52,7 +56,10 @@ def mask_depthmaps(real_position, best_estimate):
 
     return mask_depthmap_real_position, mask_depthmap_estimate
 
-def find_translation(pcd_0, pcd_1):
+def get_centroid_translation(pcd_0, pcd_1):
+    '''
+    Calculate the centroid of two pointclouds and return the transformation matrix to align the two pointclouds
+    '''
     xyz_0 = np.asarray(pcd_0.points)
     xyz_1 = np.asarray(pcd_1.points)
 
@@ -73,3 +80,30 @@ def find_translation(pcd_0, pcd_1):
             [ 0.,   0.,     0.,     1.]])
 
     return transformation_matrix
+
+def run_icp(source, target):
+    '''
+    Run ICP registration on two pointclouds
+    '''
+    trans_init = get_centroid_translation(target.pc, source.pc)
+    reg_p2p = o3d.pipelines.registration.registration_icp(
+        source.pc,
+        target.pc,
+        3,
+        trans_init,
+        o3d.pipelines.registration.TransformationEstimationPointToPoint(),
+        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=100),
+    )
+    return reg_p2p
+
+def draw_registration_result(source, target, transformation):
+    source_temp = copy.deepcopy(source.pc)
+    target_temp = copy.deepcopy(target.pc)
+    source_temp.paint_uniform_color([1, 0.706, 0])
+    target_temp.paint_uniform_color([0, 0.651, 0.929])
+    source_temp.transform(transformation)
+    o3d.visualization.draw_geometries([source_temp, target_temp],
+                                      zoom=0.4459,
+                                      front=[0.9288, -0.2951, -0.2242],
+                                      lookat=[1.6784, 2.0612, 1.4451],
+                                      up=[-0.3402, -0.9189, -0.1996])
