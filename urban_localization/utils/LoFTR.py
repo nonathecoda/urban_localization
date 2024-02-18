@@ -43,7 +43,7 @@ def inference(img1 = None, img2 = None, path1 = None, path2 = None, draw = False
     mkpts1 = correspondences['keypoints1'].cpu().numpy()
     H, inliers = cv2.findFundamentalMat(mkpts0, mkpts1, cv2.USAC_MAGSAC, 0.5, 0.999, 100000)
     inliers = inliers > 0
-
+   
     if draw == True:
         fig, ax = plt.subplots()
         draw_LAF_matches(

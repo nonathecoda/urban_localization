@@ -12,30 +12,37 @@ from typing_extensions import Self
 import cv2
 from utils.render import render_rgb_and_depth
 
-
+def plot_rgb(rgb, title):
+    cv2.imshow(title, rgb)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    
 class PoseEstimate(NamedTuple):
     rgb: np.ndarray
     depth_map: np.ndarray
     pc: o3d.geometry.PointCloud
     camera: PinholeCamera
     camera_pose: Pose
+    particle_weight: float
     correspondences: np.array 
     inliers: np.array
     score: int
 
     @classmethod
     def create_from_scene(
-        cls, scene: Scene, camera: PinholeCamera, camera_pose: Pose, name: str = 'default'
+        cls, scene: Scene, camera: PinholeCamera, camera_pose: Pose, name: str = 'default', draw: bool = False, particle_weight = 0
     ) -> Self:
+        
         color, depth = render_rgb_and_depth(scene, camera, camera_pose)
         target_path = '/Users/antonia/dev/masterthesis/render_hilla/v2.0/images/' + name + '.jpg'
         cv2.imwrite(target_path, color)
-        return PoseEstimate(rgb = color, depth_map = depth, pc = None, camera = camera, camera_pose = camera_pose, correspondences=None, inliers = None, score = None)
+        if draw == True:
+            plot_rgb(color, name)
+        return PoseEstimate(rgb = color, depth_map = depth, pc = None, camera = camera, camera_pose = camera_pose, particle_weight= particle_weight, correspondences=None, inliers = None, score = None)
 
     @classmethod
-    def create_from_image(cls, camera: PinholeCamera, camera_pose: Pose, name: str = 'default', config = None, args = None) -> Self:
-        
-        
+    def create_from_image(cls, camera: PinholeCamera, camera_pose: Pose, name: str = 'default', config = None, args = None, draw: bool = False, particle_weight  =0) -> Self:
+
         # load images
         stereo = cv2.imread(args.query_image)
         frame_left = stereo[0:config['camera']['height'], 0:config['camera']['width']]
@@ -70,8 +77,9 @@ class PoseEstimate(NamedTuple):
 
         #convert disparity to depth
         depth_map = (intrinsics_left[0,0]* config['camera']['stereo']['baseline']) / disparity # TODO: why intrinsics_left[0,0] and not intrinsics_right[0,0]?
-
-        return PoseEstimate(rgb = frame_left, depth_map = depth_map, pc = None, camera = camera, camera_pose = camera_pose, correspondences=None, inliers = None, score = None)
+        if draw == True:
+            plot_rgb(frame_left, name)
+        return PoseEstimate(rgb = frame_left, depth_map = depth_map, pc = None, camera = camera, camera_pose = camera_pose, particle_weight= particle_weight, correspondences=None, inliers = None, score = None)
 
     def get_score(self, inliers):
         score = 0
@@ -79,3 +87,5 @@ class PoseEstimate(NamedTuple):
             if i == True:
                 score = score + 1
         return score    
+
+    

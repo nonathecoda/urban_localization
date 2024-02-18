@@ -4,10 +4,11 @@ from icecream import ic
 import argparse
 import numpy as np
 import yaml
-import cv2
+from operator import attrgetter
 from utils.load_scene import load_scene
 from utils.pose_estimate import PoseEstimate
-from search_strategy.heuristic_sampling import get_best_pose_estimate, sample_estimates, sample_estimates_gauss
+from search_strategy.heuristic_sampling import get_best_pose_estimate, sample_estimates
+from search_strategy.mcl import initialise_particles, compute_weights, resample_particles
 from utils.pointcloud_tools import create_pointclouds, mask_depthmaps, run_icp, draw_registration_result
 from utils.camera_conversions import convert_camera_pose_hilla2pyrender
 from hilla.geometry.camera import Orientation, PinholeCamera, Pose
@@ -22,15 +23,28 @@ class Localizer():
     def run(self, scene, camera, query_pose, guessed_pose):
         ic(self.__location)
 
-        # sample pose estimates and get best one
-        sampled_pose_estimates = sample_estimates_gauss(scene, camera, guessed_pose, n=10, bounds = scene.bounds, uncertainty=100)
-        estimate_pose = get_best_pose_estimate(query_pose, sampled_pose_estimates)
-        #draw estimated pose
-        img = np.hstack((query_pose.rgb, estimate_pose.rgb))
-        cv2.imshow('estimated pose', img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-        print("made it ")
+        ''''
+        MCL start
+        MCL only works over time, ie it needs to be run multiple times to converge to a good estimate
+        each time a new "guessed pose" is given, the MCL algorithm is run to find the best estimate
+        '''
+        # initialise particles
+        particles = initialise_particles(scene, camera, guessed_pose, n=5, bounds = scene.bounds)
+        resample = True
+        counter = 0
+        while resample == True:
+            particles, weights = compute_weights(query_pose, particles)
+            particles = resample_particles(particles, weights)
+            best_particle = max(particles, key=attrgetter('particle_weight'))
+            counter += 1
+            if counter == 5:
+                resample = False
+        
+        '''
+        MCL end
+        '''
+
+
         # create pointclouds for true and best estimate
         masked_depthmap_true_pose, masked_depthmap_estimate_pose = mask_depthmaps(query_pose, estimate_pose) # TODO: what is this doing?
         query_pose = create_pointclouds(query_pose, masked_depthmap_true_pose, camera)
@@ -38,7 +52,7 @@ class Localizer():
 
         # ICP to register the pointclouds
         registration = run_icp(estimate_pose, query_pose)
-        draw_registration_result(estimate_pose, query_pose, registration.transformation)
+        #draw_registration_result(estimate_pose, query_pose, registration.transformation)
 
         predicted_pose = self.registration_to_realworldframe(scene, camera, estimate_pose, registration.transformation)
         

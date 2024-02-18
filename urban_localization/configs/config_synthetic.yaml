@@ -1,0 +1,9 @@
+poses:
+    query:
+        position: [6125., 4125., 34.]
+        orientation: [-90, -40, 0]
+    guess:
+        position: [6125., 4125., 34.]
+        orientation: [-90, -40, 0]
+    centroid:
+        position: [6125., 4125., 34.]

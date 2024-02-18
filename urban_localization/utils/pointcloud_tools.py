@@ -12,7 +12,8 @@ def create_pointclouds(pose_estimate, mask, camera):
 
 def mask_depthmaps(real_position, best_estimate):
     '''
-    Mask the depthmaps of the real position and the best estimate to remove points which are not in the correspondences 
+    Mask the depthmaps so that only the points which are in the correspondence
+    and only points that are not zero in either depthmap are kept
     '''
     
     skip_index = []
