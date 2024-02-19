@@ -18,3 +18,9 @@ https://github.com/isl-org/Open3D/releases/tag/v0.14.1
 double check with python --version if its 3.9
 
 Then, pip install -r requirements.txt
+
+If you get the following error:
+
+AttributeError: ObjCInstance b'PygletDelegate' has no attribute b'initWithAttributes_'
+
+just run the program again. Pyglet is unstable on MacOS

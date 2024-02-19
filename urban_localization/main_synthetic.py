@@ -11,6 +11,7 @@ from search_strategy.heuristic_sampling import get_best_pose_estimate, sample_es
 from utils.pointcloud_tools import create_pointclouds, mask_depthmaps, run_icp, draw_registration_result
 from utils.camera_conversions import convert_camera_pose_hilla2pyrender
 from hilla.geometry.camera import Orientation, PinholeCamera, Pose
+from utils.LoFTR import draw_loftr
 ########## measure execution time of block 1 ##########
 print(time.time() - start_time)
 #######################################################
@@ -30,7 +31,8 @@ class Localizer():
         cv2.imshow('estimated pose', img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-        print("made it ")
+
+        draw_loftr(query_pose, estimate_pose)
         # create pointclouds for true and best estimate
         masked_depthmap_true_pose, masked_depthmap_estimate_pose = mask_depthmaps(query_pose, estimate_pose) # TODO: what is this doing?
         query_pose = create_pointclouds(query_pose, masked_depthmap_true_pose, camera)
@@ -38,7 +40,9 @@ class Localizer():
 
         # ICP to register the pointclouds
         registration = run_icp(estimate_pose, query_pose)
-        draw_registration_result(estimate_pose, query_pose, registration.transformation)
+        draw_registration_result(estimate_pose, query_pose, registration.transformation, transform = False)
+        draw_registration_result(estimate_pose, query_pose, registration.transformation, transform = True)
+        
 
         predicted_pose = self.registration_to_realworldframe(scene, camera, estimate_pose, registration.transformation)
         

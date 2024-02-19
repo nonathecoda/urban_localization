@@ -97,13 +97,23 @@ def run_icp(source, target):
     )
     return reg_p2p
 
-def draw_registration_result(source, target, transformation):
+def draw_registration_result(source, target, transformation, transform = True):
     source_temp = copy.deepcopy(source.pc)
     target_temp = copy.deepcopy(target.pc)
     source_temp.paint_uniform_color([1, 0.706, 0])
     target_temp.paint_uniform_color([0, 0.651, 0.929])
+    #source_temp.transform(transformation)
+    if transform == False:
+        o3d.visualization.draw_geometries([source_temp, target_temp],
+                                      zoom=0.4459,
+                                      front=[0.9288, -0.2951, -0.2242],
+                                      lookat=[1.6784, 2.0612, 1.4451],
+                                      up=[-0.3402, -0.9189, -0.1996])
+        return
     source_temp.transform(transformation)
-    o3d.visualization.draw_geometries([source_temp, target_temp],
+    if transform ==  True:
+        ic("transform")
+        o3d.visualization.draw_geometries([source_temp, target_temp],
                                       zoom=0.4459,
                                       front=[0.9288, -0.2951, -0.2242],
                                       lookat=[1.6784, 2.0612, 1.4451],
