@@ -12,4 +12,29 @@ dataset:
             path_stereomap: "camera_calibration/stereo_map.xml"
             baseline: 30  # in cm
 
+poses:
+    query:
+        #position: [6600.        , 4763.        ,   61]
+        position: [6600.        , 4750.        ,   61]
+        orientation: [160, -40, 0]
+    guess:
+        position: [6600.        , 4755.        ,   61]
+        orientation: [160, -40, 0]
+    centroid:
+        position: [6125., 4125., 34.]
+    captured_transform:
+        scaling: 100
+        translation: [6675, 4630., 35]
+        rotation: [90, -135, 0] # degrees
 
+
+sampling:
+    sd_query_pitch: 1
+    sd_query_roll: 1
+    sd_guess_x: 1
+    sd_guess_y: 1
+    sd_guess_z: 1
+    sd_guess_yaw: 1
+    sd_guess_pitch: 1
+    sd_guess_roll: 1
+    number_samples: 10

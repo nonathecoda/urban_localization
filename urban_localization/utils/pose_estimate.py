@@ -23,14 +23,22 @@ class PoseEstimate(NamedTuple):
     pc: o3d.geometry.PointCloud
     camera: PinholeCamera
     camera_pose: Pose
-    particle_weight: float
     correspondences: np.array 
     inliers: np.array
     score: int
 
     @classmethod
+    def create_from_obj(cls, obj: Scene, camera: PinholeCamera, camera_pose: Pose, name: str = 'default', draw: bool = False) -> Self:
+        color, depth = render_rgb_and_depth(obj, camera, camera_pose)
+        depth = depth * 100
+        if draw == True:
+            plot_rgb(color, name)
+            #o3d.visualization.draw_geometries([pc])
+        return PoseEstimate(rgb = color, depth_map = depth, pc = None, camera = camera, camera_pose = camera_pose, correspondences=None, inliers = None, score = None)
+        
+    @classmethod
     def create_from_scene(
-        cls, scene: Scene, camera: PinholeCamera, camera_pose: Pose, name: str = 'default', draw: bool = False, particle_weight = 0
+        cls, scene: Scene, camera: PinholeCamera, camera_pose: Pose, name: str = 'default', draw: bool = False
     ) -> Self:
         
         color, depth = render_rgb_and_depth(scene, camera, camera_pose)
@@ -38,7 +46,7 @@ class PoseEstimate(NamedTuple):
         cv2.imwrite(target_path, color)
         if draw == True:
             plot_rgb(color, name)
-        return PoseEstimate(rgb = color, depth_map = depth, pc = None, camera = camera, camera_pose = camera_pose, particle_weight= particle_weight, correspondences=None, inliers = None, score = None)
+        return PoseEstimate(rgb = color, depth_map = depth, pc = None, camera = camera, camera_pose = camera_pose, correspondences=None, inliers = None, score = None)
 
     @classmethod
     def create_from_image(cls, camera: PinholeCamera, camera_pose: Pose, name: str = 'default', config = None, args = None, draw: bool = False, particle_weight  =0) -> Self:

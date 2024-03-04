@@ -6,7 +6,7 @@ import numpy as np
 from utils.pose_estimate import PoseEstimate
 import cv2
 
-def get_best_pose_estimate(true_pose, sampled_pose_estimates):
+def get_best_pose_estimate(true_pose, sampled_pose_estimates, draw_loftr_result = False):
     estimates_copy = []
     for sample in sampled_pose_estimates:
         correspondences, inliers = inference(true_pose.rgb, sample.rgb, draw = False)
@@ -16,7 +16,8 @@ def get_best_pose_estimate(true_pose, sampled_pose_estimates):
         if score > 100:
             break
     best_estimate = max(estimates_copy, key=attrgetter('score'))
-    #draw_loftr(true_pose, best_estimate)
+    if draw_loftr_result == True:
+        draw_loftr(true_pose, best_estimate)
     return best_estimate
 
 def generate_bounded_normal(mean, std, lower_bound, upper_bound):
@@ -25,35 +26,35 @@ def generate_bounded_normal(mean, std, lower_bound, upper_bound):
         if lower_bound <= sample <= upper_bound:
             return sample
 
-def sample_estimates_gauss(scene, camera, guessed_pose, n=5, bounds = None, uncertainty = 100):
+def sample_estimates_gauss(scene, camera, guessed_pose, n=5, bounds = None, uncertainty = None, pitch = -40):
     sampled_estimates = np.empty((n), dtype=object)
     for i in range(n):
         mean_x = guessed_pose.camera_pose.position.x_coord
         mean_y = guessed_pose.camera_pose.position.y_coord
-        std = uncertainty
-        position = [generate_bounded_normal(mean_x, std, lower_bound = bounds[0, 0], upper_bound=bounds[1,0]), generate_bounded_normal(mean_y, std, lower_bound=bounds[0, 1], upper_bound=bounds[1,1]), 60]
+        position = [generate_bounded_normal(mean_x, uncertainty[0], lower_bound = bounds[0, 0], upper_bound=bounds[1,0]), generate_bounded_normal(mean_y, uncertainty[1], lower_bound=bounds[0, 1], upper_bound=bounds[1,1]), 60]
         randomizer = np.random.randint(0, 4)
         ic(randomizer)
         if randomizer == 0:
-            orientation = [0, -40, 0]
+            orientation = [0, pitch, 0]
         elif randomizer == 1:
-            orientation = [90, -40, 0]
+            orientation = [90, pitch, 0]
         elif randomizer == 2:
-            orientation = [180, -40, 0]
+            orientation = [180, pitch, 0]
         elif randomizer == 3:
-            orientation = [-90, -40, 0]
+            orientation = [-90, pitch, 0]
+        ic(orientation)
         new_estimate_pose = Pose.from_camera_in_world(
             Orientation.from_yaw_pitch_roll(np.radians(orientation)),
             position=position)
-        new_estimate = PoseEstimate.create_from_scene(scene, camera, new_estimate_pose, name = str(i), draw = False)
+        new_estimate = PoseEstimate.create_from_scene(scene, camera, new_estimate_pose, name = str(i), draw = True)
         sampled_estimates[i] = new_estimate
     return sampled_estimates
 
-def sample_estimates(scene, camera, guessed_pose, n):
-    '''
-    in transforms, each line represents by how many metres / degrees the respective value should be shifted
-    [x,y,z],[yaw,pitch,roll]
-    '''
+'''def sample_estimates(scene, camera, guessed_pose, n):
+    
+    #in transforms, each line represents by how many metres / degrees the respective value should be shifted
+    #[x,y,z],[yaw,pitch,roll]
+    
     guessed_pose_position = [guessed_pose.camera_pose.position.x_coord, guessed_pose.camera_pose.position.y_coord, guessed_pose.camera_pose.position.z_coord]
     guessed_pose_orientation = np.rad2deg(guessed_pose.camera_pose.orientation.yaw_pitch_roll)
 
@@ -82,3 +83,4 @@ def sample_estimates(scene, camera, guessed_pose, n):
         estimates.append(new_estimate)
 
     return estimates
+'''

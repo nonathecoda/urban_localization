@@ -5,7 +5,7 @@ import pyrender
 from matplotlib import pyplot as plt
 import numpy as np
 
-from utils.camera_conversions import ensure_pyrender_camera, ensure_pyrender_camera_pose
+from utils.frame_conversions import ensure_pyrender_camera, ensure_pyrender_camera_pose
 
 def live_view(scene):
     pyrender.Viewer(scene, use_raymond_lighting=True)

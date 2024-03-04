@@ -7,3 +7,26 @@ poses:
         orientation: [-90, -40, 0]
     centroid:
         position: [6125., 4125., 34.]
+
+sampling:
+    sd_query_pitch: 5
+    sd_query_roll: 5
+    sd_guess_x: 10
+    sd_guess_y: 10
+    sd_guess_z: 10
+    sd_guess_yaw: 45
+    sd_guess_pitch: 45
+    sd_guess_roll: 45
+    number_samples: 10
+
+experiment:
+    n_iterations: 100
+    random_map: True
+    entire_map: False
+    random_pose: True
+    min_altitude: 50
+    max_altitude: 60
+    alpha: -40
+
+results:
+    folder: '5_5_10_10_10_45_45_45/'
