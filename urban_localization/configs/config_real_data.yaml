@@ -11,6 +11,9 @@ dataset:
         stereo:
             path_stereomap: "camera_calibration/stereo_map.xml"
             baseline: 30  # in cm
+experiment:
+    random_pose: True
+    n_iterations: 200
 
 poses:
     query:
@@ -18,7 +21,7 @@ poses:
         position: [6600.        , 4750.        ,   61]
         orientation: [160, -40, 0]
     guess:
-        position: [6600.        , 4755.        ,   61]
+        position: [6600.        , 4755.        ,   70]
         orientation: [160, -40, 0]
     centroid:
         position: [6125., 4125., 34.]
@@ -27,14 +30,14 @@ poses:
         translation: [6675, 4630., 35]
         rotation: [90, -135, 0] # degrees
 
-
 sampling:
-    sd_query_pitch: 1
-    sd_query_roll: 1
-    sd_guess_x: 1
-    sd_guess_y: 1
-    sd_guess_z: 1
-    sd_guess_yaw: 1
-    sd_guess_pitch: 1
-    sd_guess_roll: 1
+    sd_guess_x: 10
+    sd_guess_y: 10
+    sd_guess_z: 10
+    sd_guess_yaw: 5
+    sd_guess_pitch: 5
+    sd_guess_roll: 5
     number_samples: 10
+
+results:
+    folder: '10_10_10_45_45_45/'

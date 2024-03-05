@@ -100,8 +100,8 @@ def run_icp(source, target):
 def draw_registration_result(source, target, transformation, transform = True):
     source_temp = copy.deepcopy(source.pc)
     target_temp = copy.deepcopy(target.pc)
-    source_temp.paint_uniform_color([1, 0.706, 0])
-    target_temp.paint_uniform_color([0, 0.651, 0.929])
+    source_temp.paint_uniform_color([1, 0.706, 0]) #orange
+    target_temp.paint_uniform_color([0, 0.651, 0.929]) #blue
     #source_temp.transform(transformation)
     if transform == False:
         o3d.visualization.draw_geometries([source_temp, target_temp],

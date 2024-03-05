@@ -56,7 +56,7 @@ roll_pred = []
 
 execution_times = []
 
-dir = 'results/exp5'
+dir = 'results_field_exp/10_10_10_45_45_45'
 
 #list of yaml files in results directory
 files = os.listdir(dir)

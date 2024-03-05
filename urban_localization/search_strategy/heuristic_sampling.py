@@ -46,7 +46,7 @@ def sample_estimates_gauss(scene, camera, guessed_pose, n=5, bounds = None, unce
         new_estimate_pose = Pose.from_camera_in_world(
             Orientation.from_yaw_pitch_roll(np.radians(orientation)),
             position=position)
-        new_estimate = PoseEstimate.create_from_scene(scene, camera, new_estimate_pose, name = str(i), draw = True)
+        new_estimate = PoseEstimate.create_from_scene(scene, camera, new_estimate_pose, name = str(i), draw = False)
         sampled_estimates[i] = new_estimate
     return sampled_estimates
 

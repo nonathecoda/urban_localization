@@ -30,10 +30,9 @@ class PoseEstimate(NamedTuple):
     @classmethod
     def create_from_obj(cls, obj: Scene, camera: PinholeCamera, camera_pose: Pose, name: str = 'default', draw: bool = False) -> Self:
         color, depth = render_rgb_and_depth(obj, camera, camera_pose)
-        depth = depth * 100
         if draw == True:
             plot_rgb(color, name)
-            #o3d.visualization.draw_geometries([pc])
+            
         return PoseEstimate(rgb = color, depth_map = depth, pc = None, camera = camera, camera_pose = camera_pose, correspondences=None, inliers = None, score = None)
         
     @classmethod

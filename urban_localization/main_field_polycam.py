@@ -13,6 +13,7 @@ from utils.pointcloud_tools import create_pointclouds, mask_depthmaps, run_icp, 
 from utils.frame_conversions import convert_camera_pose_hilla2pyrender, rotation_matrix_to_yaw_pitch_roll, registration_to_realworldframe
 from hilla.geometry.camera import Orientation, PinholeCamera, Pose
 from utils.LoFTR import draw_loftr
+import open3d as o3d
 
 class Localizer():
     def __init__(self, scene, camera, query_pose, guessed_pose, config, args, index =0):
@@ -36,7 +37,18 @@ class Localizer():
         
         # sample pose estimates and get best one
         sampled_pose_estimates = sample_estimates_gauss(self.__scene, self.__camera, self.__guessed_pose, n=self.__config['sampling']['number_samples'], bounds = self.__scene.bounds, uncertainty=[self.__config['sampling']['sd_guess_x'],self.__config['sampling']['sd_guess_y'] ])
-        self.__estimate_pose = get_best_pose_estimate(self.__query_pose, sampled_pose_estimates)
+        self.__estimate_pose = get_best_pose_estimate(self.__query_pose, sampled_pose_estimates, draw_loftr_result = False)
+        '''
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+        ax[0].imshow(self.__query_pose.depth_map)
+        ax[0].set_title('query')
+        ax[0].set_axis_off()
+        ax[1].imshow(self.__estimate_pose.depth_map)
+        ax[1].set_title('estimate')
+        ax[1].set_axis_off()
+        plt.show()
+        '''
         #draw estimated pose
         #img = np.hstack((self.__query_pose.rgb, self.__estimate_pose.rgb))
         #cv2.imshow('estimated pose', img)
@@ -46,13 +58,14 @@ class Localizer():
         #draw_loftr(self.__query_pose, self.__estimate_pose)
         # create pointclouds for true and best estimate
         masked_depthmap_true_pose, masked_depthmap_estimate_pose = mask_depthmaps(self.__query_pose, self.__estimate_pose) # TODO: what is this doing?
+        
         self.__query_pose = create_pointclouds(self.__query_pose, masked_depthmap_true_pose, self.__camera)
         self.__estimate_pose = create_pointclouds(self.__estimate_pose, masked_depthmap_estimate_pose, self.__camera)
 
         # ICP to register the pointclouds
         registration = run_icp(self.__estimate_pose, self.__query_pose)
-        #draw_registration_result(self.__estimate_pose, self.__query_pose, registration.transformation, transform = False)
-        #draw_registration_result(self.__estimate_pose, self.__query_pose, registration.transformation, transform = True)
+#        draw_registration_result(self.__estimate_pose, self.__query_pose, registration.transformation, transform=False)
+ #       draw_registration_result(self.__estimate_pose, self.__query_pose, registration.transformation, transform=True)
         
 
         pyrender_pose = registration_to_realworldframe(self.__scene, self.__camera, self.__estimate_pose, registration.transformation)
@@ -102,36 +115,34 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Script to export the keypoints for images in a dataset using a base detector')
     #parser.add_argument('-y', '--yaml-config', default='configs/config_export_keypoints.yaml', help='YAML config file')
     parser.add_argument('-i', '--image-dir', default = '/Users/antonia/dev/masterthesis/urban_localization/images/', help='Image directors')
-    parser.add_argument('-z', '--scene-dir', default='/Users/antonia/dev/masterthesis/Helsinki3D_2017_OBJ_672496x2', help='Directory of the obj files for the 3d model')
-    parser.add_argument('-o', '--obj-dir', default='/Users/antonia/Downloads/obj_1/textured.obj', help='Directory of the obj files for the 3d model')
-    parser.add_argument('-y', '--yaml-config', default='/Users/antonia/dev/masterthesis/urban_localization/urban_localization/configs/config_real_data.yaml', help='YAML config file')
-    parser.add_argument('-s', '--save-dir', default='/Users/antonia/dev/masterthesis/urban_localization/urban_localization/results', help='Directory to save the results in YAML')
+    parser.add_argument('-m', '--map-dir', default='/Users/antonia/dev/masterthesis/Helsinki3D_2017_OBJ_672496x2/', help='Directory of the obj files for the 3d model')
+    parser.add_argument('-o', '--obj-dir', default="/Users/antonia/Downloads/obj_1/textured.obj", help='Directory of the obj files for the 3d model')
+    parser.add_argument('-y', '--yaml-config', default='urban_localization/configs/config_real_data.yaml', help='YAML config file')
+    parser.add_argument('-s', '--save-dir', default='/Users/antonia/dev/masterthesis/urban_localization/urban_localization/results_field_exp', help='Directory to save the results in YAML')
     args = parser.parse_args()
     
     with open(args.yaml_config, 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
-
     def initialisation(config, scene = None):
         print("Initialising stuff")
         # create pyrender scene object
-        ic("scene")
-        scene = load_scene(args.scene_dir, tiles = ["672496d2", "672496d1"])
-        # create hilla camera object
         
+        if config['experiment']['random_pose'] == True:
+            config = change_poses(config, scene, change_query = False)
+        # create hilla camera object
         camera = PinholeCamera.from_fov(width=640, height=480, hfov_deg=90)
-        #ic(camera.fx, camera.fy, camera.px, camera.py, camera.resolution)
+        #### create query pose
         query_pose_hilla = Pose.from_camera_in_world(
-            Orientation.from_yaw_pitch_roll(np.radians(config['poses']['captured']['orientation'])),
-            position=config['poses']['captured']['position'],
+            Orientation.from_yaw_pitch_roll(np.radians(config['poses']['query']['orientation'])),
+            position=config['poses']['query']['position'],
         )
         pyrender_pose = convert_camera_pose_hilla2pyrender(query_pose_hilla)
-        captured_obj = load_obj(args.obj_dir, pose = pyrender_pose)
-        ic(captured_obj.bounds)
-        ic(captured_obj.centroid)
-        query_pose = PoseEstimate.create_from_scene(captured_obj, camera, query_pose_hilla, name = 'query_pose', draw = True)
-        exit()
+        captured_obj = load_obj(args.obj_dir, pose = pyrender_pose, scaling_factor = config['poses']['captured_transform']['scaling'], translation = config['poses']['captured_transform']['translation'], rotation = config['poses']['captured_transform']['rotation'])
+        query_pose = PoseEstimate.create_from_obj(captured_obj, camera, query_pose_hilla, name = 'query_pose', draw = False)
+
         # create PoseEstimate object for guessed pose
+        #### create guessed pose
         guessed_pose_hilla = Pose.from_camera_in_world(
             Orientation.from_yaw_pitch_roll(np.radians(config['poses']['guess']['orientation'])),
             position=config['poses']['guess']['position'],
@@ -139,14 +150,29 @@ if __name__ == "__main__":
         guessed_pose = PoseEstimate.create_from_scene(scene, camera, guessed_pose_hilla, name = 'guessed_pose', draw = False)
         return scene, camera, query_pose, guessed_pose, config
 
-   
-    i = 0
-    scene, camera, query_pose, guessed_pose, config = initialisation(config)
-    time_stamp = time.time()
-    loc = Localizer(scene, camera, query_pose, guessed_pose, config, args, index = i)
-    loc.run(time_stamp)
-    no_errors = True
-            
+    #### load scene
+    scene = load_scene(args.map_dir, tiles = ["blabla"]) # ACHTUNG: tiles = ["672496d2", "672496d1"] ist hardcoded in der Funktion load_scene
+    for i in range(config['experiment']['n_iterations']):
+        print("########### Running iteration: ", i, "###########")
+
+
+        if i < 82:
+            continue
+
+        no_errors = False
+        while no_errors == False:
+            try:
+                scene, camera, query_pose, guessed_pose, config = initialisation(config, scene = scene)
+                time_stamp = time.time()
+                loc = Localizer(scene, camera, query_pose, guessed_pose, config, args, index = i)
+                loc.run(time_stamp)
+                no_errors = True
+            except AttributeError as ae:
+                print(ae)
+            except ValueError as ve:
+                print(ve)
+            except cv2.error as e:
+                print(e)
 
 
 # run i < 15 again for '5_5_10_10_10_45_45_45/' mit 10 samples.

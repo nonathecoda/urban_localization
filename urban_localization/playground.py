@@ -85,13 +85,15 @@ def _load_scene(data_dir, camera_pose = None) -> Scene:
     #pyrender.Viewer(scene, use_raymond_lighting=True)
     ic(scene.bounds)
     return scene
+
+
 #############################################################################
 ############################MAIN#############################################
 
 with open('/Users/antonia/dev/masterthesis/urban_localization/urban_localization/configs/config_real_data.yaml', 'r') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
-obj_dir  = "/Users/antonia/Downloads/obj_1"
+obj_dir  = "/Users/antonia/Downloads/obj_1/textured.obj"
 map_dir = "/Users/antonia/dev/masterthesis/Helsinki3D_2017_OBJ_672496x2/"
 
 ## load scene

@@ -15,7 +15,7 @@ def load_scene(data_dir, camera_pose = None, tiles = None) -> Scene:
     
     if tiles is not None:
         for folder in tqdm.tqdm(os.listdir(data_dir)):
-            if (folder != "672496d2") and (folder != "672496d1"):# and (folder != "672496d4") and (folder != "672496d3"):
+            if (folder != "672496d2") and (folder != "672496d1") and (folder != "672496b3") and (folder != "672496b4")  and (folder != "672496d4")  and (folder != "672496d3")  and (folder != "672496c4")  and (folder != "672496c2")  and (folder != "672496a4"):# and (folder != "672496d4") and (folder != "672496d3"):
                 continue
             tiles = Path(data_dir).rglob(folder + "/*L21*.obj")
             for tile_path in tiles:
@@ -67,12 +67,13 @@ def choose_random_map(data_dir) -> str:
     print("random_data_dir: ", random_data_dir)
     return random_data_dir
 
-def change_poses(config, scene) -> dict:
+def change_poses(config, scene, change_query = True) -> dict:
     bounds_x = (scene.bounds[0,0], scene.bounds[1,0])
     bounds_y = (scene.bounds[0,1], scene.bounds[1,1])
     
-    config['poses']['query']['position'] = [random.uniform(bounds_x[0], bounds_x[1]), random.uniform(bounds_y[0], bounds_y[1]), random.uniform(config['experiment']['min_altitude'], config['experiment']['max_altitude'])]
-    config['poses']['query']['orientation'] = [random.uniform(0, 360), np.random.normal(config['experiment']['alpha'], config['sampling']['sd_query_pitch']),np.random.normal(0,config['sampling']['sd_query_roll'])]
+    if change_query == True:
+        config['poses']['query']['position'] = [random.uniform(bounds_x[0], bounds_x[1]), random.uniform(bounds_y[0], bounds_y[1]), random.uniform(config['experiment']['min_altitude'], config['experiment']['max_altitude'])]
+        config['poses']['query']['orientation'] = [random.uniform(0, 360), np.random.normal(config['experiment']['alpha'], config['sampling']['sd_query_pitch']),np.random.normal(0,config['sampling']['sd_query_roll'])]
 
     noise_position_x = np.random.normal(config['poses']['query']['position'][0], config['sampling']['sd_guess_x'])
     noise_position_y = np.random.normal(config['poses']['query']['position'][1], config['sampling']['sd_guess_y'])
