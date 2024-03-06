@@ -20,7 +20,8 @@ from utils.frame_conversions import convert_camera_pose_hilla2pyrender, rotation
 from hilla.geometry.camera import Orientation, PinholeCamera, Pose
 from utils.LoFTR import draw_loftr
 import yaml
-
+import cv2
+import matplotlib.pyplot as plt
 
 def load_obj(data_dir, scaling_factor = 0, translation = [0,0,0], rotation = [0,0,0]) -> pyrender.Mesh:    
     tm_mesh = trimesh.load(data_dir + "/textured.obj")
@@ -93,31 +94,47 @@ def _load_scene(data_dir, camera_pose = None) -> Scene:
 with open('/Users/antonia/dev/masterthesis/urban_localization/urban_localization/configs/config_real_data.yaml', 'r') as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
-obj_dir  = "/Users/antonia/Downloads/obj_1/textured.obj"
+#obj_dir  = "/Users/antonia/Downloads/obj_1/textured.obj"
 map_dir = "/Users/antonia/dev/masterthesis/Helsinki3D_2017_OBJ_672496x2/"
+depth_dir = "/Users/antonia/dev/masterthesis/urban_localization/urban_localization/depth_any.npy"
+rgb_dir = "/Users/antonia/dev/masterthesis/Depth-Anything/metric_depth/my_test/input/QUERY_IMG.jpeg"
+
+rgb = cv2.imread(rgb_dir)
+depth = np.load(depth_dir)
+fig, axs = plt.subplots(1, 2)
+axs[0].imshow(rgb)
+axs[1].imshow(depth)
+#plt.show()
+ic(rgb.shape)
 
 ## load scene
-scene = _load_scene(map_dir)
+scene = load_scene(map_dir, tiles = ["blabla"]) # change back tiles
 ic(scene.centroid)
-## load and scale obj
-#translation = [6625., 4750., 40]
-obj = load_obj(obj_dir, scaling_factor=110, translation = [6625.+50, 4750-120., 35], rotation = [90, -135, 0])
-ic(obj.centroid)
-### create camera
-hilla_camera = PinholeCamera.from_fov(width=640, height=480, hfov_deg=90)
-pyrender_camera = convert_camera_model_hilla2pyrender(hilla_camera)
 
+### create camera
+hilla_camera = PinholeCamera.from_fov(width=531, height=708, hfov_deg=90)
+pyrender_camera = convert_camera_model_hilla2pyrender(hilla_camera)
 #### create query pose
 query_pose_hilla = Pose.from_camera_in_world(
-    Orientation.from_yaw_pitch_roll(np.radians(config['poses']['query']['orientation'])),
-    position=config['poses']['query']['position'],
+    Orientation.from_yaw_pitch_roll(np.radians(config['poses']['query_depth_anything']['orientation'])),
+    position=config['poses']['query_depth_anything']['position'],
 )
 pyrender_pose = convert_camera_pose_hilla2pyrender(query_pose_hilla)
+query_pose = PoseEstimate.create_from_depth_map(rgb, depth, pyrender_camera, query_pose_hilla, name = 'query_pose', draw = True)
+#cls, rgb: np.array, depth: np.array, camera: PinholeCamera, camera_pose: Pose, name: str = 'default', draw: bool = 
 
-## scale obj and add it to scene
-scene.add(obj)
-scene.add(pyrender_camera, pose=pyrender_pose)
+
+exit()
+### add cube
+cube = trimesh.primitives.Box(extents=(1.0, 1.0, 1.0))
+red_color = [1.0, 0.0, 0.0, 1.0]  # Red with full opacity
+material = pyrender.MetallicRoughnessMaterial(baseColorFactor=red_color)
+cube_mesh = pyrender.Mesh.from_trimesh(cube, material=material)
+scene.add(cube_mesh, pose=pyrender_pose)
+## add camera to the scene
+#scene.add(pyrender_camera, pose=pyrender_pose)
 pyrender.Viewer(scene, use_raymond_lighting=True)
+
 
 exit()
 

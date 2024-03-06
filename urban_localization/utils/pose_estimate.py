@@ -32,9 +32,14 @@ class PoseEstimate(NamedTuple):
         color, depth = render_rgb_and_depth(obj, camera, camera_pose)
         if draw == True:
             plot_rgb(color, name)
-            
         return PoseEstimate(rgb = color, depth_map = depth, pc = None, camera = camera, camera_pose = camera_pose, correspondences=None, inliers = None, score = None)
         
+    @classmethod
+    def create_from_depth_map(cls, rgb: np.array, depth: np.array, camera: PinholeCamera, camera_pose: Pose, name: str = 'default', draw: bool = False) -> Self:
+        if draw == True:
+            plot_rgb(rgb, name)
+        return PoseEstimate(rgb = rgb, depth_map = depth, pc = None, camera = camera, camera_pose = camera_pose, correspondences=None, inliers = None, score = None)
+    
     @classmethod
     def create_from_scene(
         cls, scene: Scene, camera: PinholeCamera, camera_pose: Pose, name: str = 'default', draw: bool = False

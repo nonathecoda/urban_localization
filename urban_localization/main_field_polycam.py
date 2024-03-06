@@ -156,7 +156,7 @@ if __name__ == "__main__":
         print("########### Running iteration: ", i, "###########")
 
 
-        if i < 82:
+        if i < 56:
             continue
 
         no_errors = False

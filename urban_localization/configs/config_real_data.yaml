@@ -13,13 +13,16 @@ dataset:
             baseline: 30  # in cm
 experiment:
     random_pose: True
-    n_iterations: 200
+    n_iterations: 100
 
 poses:
     query:
         #position: [6600.        , 4763.        ,   61]
         position: [6600.        , 4750.        ,   61]
         orientation: [160, -40, 0]
+    query_depth_anything:
+        position: [6600.        , 4761.        ,   61]
+        orientation: [140, -25, 0]
     guess:
         position: [6600.        , 4755.        ,   70]
         orientation: [160, -40, 0]
@@ -40,4 +43,4 @@ sampling:
     number_samples: 10
 
 results:
-    folder: '10_10_10_45_45_45/'
+    folder: 'depth_any/'

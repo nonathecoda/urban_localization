@@ -58,7 +58,7 @@ def convert_camera_model_hilla2pyrender(
 
 
 def ensure_pyrender_camera(camera) -> pyrender.camera.IntrinsicsCamera:
-    if isinstance(camera, pyrender.camera.IntrinsicsCamera):
+    if isinstance(camera, pyrender.camera.IntrinsicsCamera) or isinstance(camera, pyrender.camera.PerspectiveCamera):
         return camera
     if isinstance(camera, PinholeCamera):
         return convert_camera_model_hilla2pyrender(camera)

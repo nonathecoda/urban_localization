@@ -9,6 +9,7 @@ import cv2
 def get_best_pose_estimate(true_pose, sampled_pose_estimates, draw_loftr_result = False):
     estimates_copy = []
     for sample in sampled_pose_estimates:
+        
         correspondences, inliers = inference(true_pose.rgb, sample.rgb, draw = False)
         score = sample.get_score(inliers)
         sample = sample._replace(correspondences = correspondences, inliers = inliers, score = score)
@@ -35,13 +36,17 @@ def sample_estimates_gauss(scene, camera, guessed_pose, n=5, bounds = None, unce
         randomizer = np.random.randint(0, 4)
         ic(randomizer)
         if randomizer == 0:
-            orientation = [0, pitch, 0]
+            #orientation = [0, pitch, 0]
+            orientation = [0-20, pitch, 0]
         elif randomizer == 1:
-            orientation = [90, pitch, 0]
+            #orientation = [90, pitch, 0]
+            orientation = [90-20, pitch, 0]
         elif randomizer == 2:
-            orientation = [180, pitch, 0]
+            #orientation = [180, pitch, 0]
+            orientation = [180-20, pitch, 0]
         elif randomizer == 3:
-            orientation = [-90, pitch, 0]
+            #orientation = [-90, pitch, 0]
+            orientation = [-90-20, pitch, 0]
         ic(orientation)
         new_estimate_pose = Pose.from_camera_in_world(
             Orientation.from_yaw_pitch_roll(np.radians(orientation)),

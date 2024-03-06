@@ -15,7 +15,7 @@ def load_scene(data_dir, camera_pose = None, tiles = None) -> Scene:
     
     if tiles is not None:
         for folder in tqdm.tqdm(os.listdir(data_dir)):
-            if (folder != "672496d2") and (folder != "672496d1") and (folder != "672496b3") and (folder != "672496b4")  and (folder != "672496d4")  and (folder != "672496d3")  and (folder != "672496c4")  and (folder != "672496c2")  and (folder != "672496a4"):# and (folder != "672496d4") and (folder != "672496d3"):
+            if (folder != "672496d2") and (folder != "672496d1"):# and (folder != "672496b3") and (folder != "672496b4")  and (folder != "672496d4")  and (folder != "672496d3")  and (folder != "672496c4")  and (folder != "672496c2")  and (folder != "672496a4"):# and (folder != "672496d4") and (folder != "672496d3"):
                 continue
             tiles = Path(data_dir).rglob(folder + "/*L21*.obj")
             for tile_path in tiles:

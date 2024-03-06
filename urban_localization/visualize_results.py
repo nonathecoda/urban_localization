@@ -56,7 +56,7 @@ roll_pred = []
 
 execution_times = []
 
-dir = 'results_field_exp/10_10_10_45_45_45'
+dir = 'urban_localization/results_field_exp/depth_any'
 
 #list of yaml files in results directory
 files = os.listdir(dir)
@@ -64,6 +64,16 @@ for file in files:
     path = os.path.join(dir, file)
     with open(path, 'r') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
+
+            config['query_position'][0] = 6600
+            config['query_position'][1] = 4761
+            config['query_position'][2] = 61
+            config['query_orientation'][0] = 140
+            config['query_orientation'][1] = -25
+            config['query_orientation'][2] = 0
+
+            #position: [6600.        , 4761.        ,   61]
+            #orientation: [140, -25, 0]
 
             x_query.append(config['query_position'][0])
             y_query.append(config['query_position'][1])
@@ -191,7 +201,7 @@ bplot1 = axs[0].boxplot(position_errors.values(), labels=position_errors.keys(),
 axs[0].set_title('Position Errors')
 axs[0].set_ylabel('Observed values [m]')
 axs[0].yaxis.grid(True)
-axs[0].set_ylim(bottom=-100, top=80)
+axs[0].set_ylim(bottom=-60, top=60)
 #axs[0].set_ylim(bottom=-200, top=200)
 
 
@@ -201,7 +211,7 @@ axs[1].set_title('Rotation Errors')
 axs[1].set_ylabel('Observed values [degrees]')
 axs[1].yaxis.grid(True)
 axs[1].set_ylim(bottom=-70, top=70)
-#axs[1].set_ylim(bottom=-200, top=200)
+axs[1].set_ylim(bottom=-80, top=120)
 
 # Filling both plots with colors
 colors = ['pink', 'lightblue', 'lightgreen']
